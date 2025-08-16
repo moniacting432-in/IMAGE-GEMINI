@@ -1,12 +1,16 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
 
 function App() {
   const [file, setFile] = useState(null);
   const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const uploadFile = async () => {
     if (!file) return alert("Please select a file");
+
+    setLoading(true);
+    setResponse("");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -21,30 +25,38 @@ function App() {
       const rawText = data.msg;
 
       const cleanText = rawText
-        .replace(/:\s*\*\*\s*/g, ': ')       // remove "**" after colons
-        .replace(/\*\*(.*?)\*\*/g, '$1')     // remove surrounding **bold**
-        .replace(/^\*+\s?/gm, '')            // remove lines starting with "*"
-        .replace(/\n{2,}/g, '\n\n')          // normalize multiple line breaks
-        .trim();                             // remove leading/trailing whitespace
+        .replace(/:\s*\*\*\s*/g, ': ')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/^\*+\s?/gm, '')
+        .replace(/\n{2,}/g, '\n\n')
+        .trim();
 
       setResponse(cleanText);
     } catch (err) {
       console.error("Error uploading file:", err);
       setResponse("Error uploading file.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div id="root">
+      <h1>Image Description Generator</h1>
+
       <input
         type="file"
         name="file"
         onChange={(e) => setFile(e.target.files[0])}
+        className="file-input"
       />
-      <button onClick={uploadFile}>Get Description</button>
 
-      <div style={{ whiteSpace: 'pre-line', marginTop: '20px' }}>
-        {response}
+      <button onClick={uploadFile} className="upload-button">
+        {loading ? "Processing..." : "Get Description"}
+      </button>
+
+      <div className="response-box">
+        {response || "Your file description will appear here..."}
       </div>
     </div>
   )
